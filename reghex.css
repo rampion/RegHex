@@ -31,5 +31,5 @@ a:hover {
 .selected path {
   stroke-width: 2; 
   fill-opacity: 0.2; 
-  fill: green;
+  fill: cyan;
 }
