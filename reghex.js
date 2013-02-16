@@ -99,24 +99,35 @@ function loadUI(){
     var selected_text = selected ? $('text', selected)[0] : null;
 
     switch (e.keyCode){
+    case 27: /* escape */
     case 13: /* enter */
-      if (selected)
+      if (selected) {
         selected.setAttribute('class', 'cell selectable');
-      return;
+        return false;
+      }
     case 37: /* left */   
       rotate('widdershins'); 
-      return;
+      return false;
     case 39: /* right */  
       rotate('clockwise'); 
-      return;
+      return false;
     case  8: /* backspace */ 
-      if (selected_text)
-        selected_text.textContent = selected_text.textContent.replace(/.$/,'');
-      return;
+      if (selected_text) {
+        selected_text.textContent = '';
+        return false;
+      }
     case 0: 
-      if (selected_text)
-        selected_text.textContent += String.fromCharCode(e.charCode);
-      return;
+      if (selected_text) {
+        // a-z => A-Z
+        // toggle letters
+        var c = (65 <= e.charCode && e.charCode <= 90)  ? String.fromCharCode(e.charCode)
+              : (97 <= e.charCode && e.charCode <= 122) ? String.fromCharCode(e.charCode).toUpperCase()
+              : null;
+        if (!c) return;
+        t = selected_text.textContent;
+        selected_text.textContent = (t.indexOf(c) >= 0) ? t.replace(c,'') : t + c;
+        return false;
+      }
     }
   });
 }
