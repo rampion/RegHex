@@ -1,8 +1,16 @@
 function loadPuzzle(puzzle) {
 
   // grab these to use as templates
-  var $cell = $('g[class="cell selectable"]');
-  var $edge = $('g[class="edge"]');
+  var $cell = $('#cells > g:first-child');
+  var $edge = $('#edges > g:first-child');
+
+  // clear anything prior
+  $('#cells').empty().append($cell);
+  $('#edges').empty().append($edge);
+  $('text', $cell).text('');
+  $('text', $edge).text('');
+  $cell.attr('class', 'cell selectable');
+  $edge.attr('class', 'edge');
 
   // clone the templates to create a puzzle of the appropriate size
   for (var j = 0; j <= puzzle.edgeLen; j++){
@@ -32,8 +40,6 @@ function loadPuzzle(puzzle) {
       }
     }
   }
-  $cell.attr('id', 'ABC');  // id for center hex
-  $edge.remove();           // only used as template
 
   // load puzzle clues into the cells and edges
   for (var id in puzzle.clues) {

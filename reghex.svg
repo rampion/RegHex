@@ -10,7 +10,7 @@
     <g>
       <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" id="wheel"/>
       <g id="cells">
-        <g class="cell selectable">
+        <g id="ABC" class="cell selectable">
           <g>
             <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/>
             <text/>
