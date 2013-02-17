@@ -38,7 +38,7 @@ a:hover {
   fill-opacity: 0.2;
   fill: green;
 }
-.A-error path,.B-error path,.C-error path {
+.A-failure path,.B-failure path,.C-failure path {
   fill-opacity: 0.2;
   fill: red;
 }

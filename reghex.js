@@ -158,78 +158,29 @@ function loadUI() {
     $('[class~="selected"]').removeClassSVG('selected');
   });
 
-  var _A_ = 65,
-      _Z_ = 90,
-      _a_ = 97,
-      _z_ = 122;
-
+  // see whether this cell is part of any full words,
+  // and if so, whether they match the edge pattern
   function check($cell){
     $cell.data('edges').forEach(function(edge){
       var cells = $(edge).data('cells');
 
-      var nextClass = _a_;
-      var contains = {};
-      for (var i = _A_; i <= _Z_; i++){
-        contains[String.fromCharCode(i)] = {};
-      }
-      var klassFor = {};
-      var klassDef = {};
-
-      var s = cells.map(function(cell){
-        var v = $('text', cell).text();
-        if (v.length == 1) return v;
-        v = v.length ? v.split('').sort().join('') : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        if (!klassFor[v]){
-          klassFor[v] = String.fromCharCode(nextClass++);
-          klassDef[klassFor[v]] = v;
-        }
-        v.split('').forEach(function(c){
-          contains[c][klassFor[v]] = true;
-        });
-        return klassFor[v];
-      }).join('');
-
-      for (var c in contains){
-        var t = '';
-        for (var k in contains[c]){
-          t += k;
-        }
-        contains[c] = t;
-      }
-
-      var regex = new RegExp('^'+$('text', edge).text().replace(/\[.*?\]|[A-Z]/g, function(m){
-        if (m[1] == '^') {
-          var count = {};
-          m.replace(/[A-Z]/, function(c){ 
-            contains[c].split('').forEach(function(k){
-              if (!count[k]) count[k] = 0;
-              count[k]++;
-            });
-          });
-          return m.replace(']', function(){
-            var covered = '';
-            for (var k in count){
-              if (count[k] == klassDef[k].length) 
-                covered += k;
-            }
-            return covered + ']';
-          });
-        } else if (m[0] == '[') {
-          return m.replace(/[A-Z]/, function(c){ return c+contains[c]; });
-        } else {
-          return '['+m+contains[m]+']';
-        }
-      })+'$');
-
-      //console.log( edge, regex, cells, s, s.match(regex) );
-      var m = s.match(regex);
-      var error = edge.id[0]+'-error';
+      var failure = edge.id[0]+'-failure';
       var success = edge.id[0]+'-success';
-      if (m){
-        $(cells).removeClassSVG(error);
-        if (nextClass == _a_) $(cells).addClassSVG(success);
+
+      var regex = new RegExp('^'+$('text', edge).text()+'$');
+      var str = cells.map(function(cell){ return $('text', cell).text(); }).join(''); 
+
+      if (str.length < cells.length) {
+        // incomplete
+        $(cells).removeClassSVG(success);
+        $(cells).removeClassSVG(failure);
+      } else if (str.match(regex)) {
+        // success
+        $(cells).addClassSVG(success);
+        $(cells).removeClassSVG(failure);
       } else {
-        $(cells).addClassSVG(error);
+        // failure
+        $(cells).addClassSVG(failure);
         $(cells).removeClassSVG(success);
       }
     });
@@ -265,14 +216,16 @@ function loadUI() {
     case 0: 
       if ($selected.length) {
         // a-z => A-Z
-        // toggle letters
+        var _A_ = 65,
+            _Z_ = 90,
+            _a_ = 97,
+            _z_ = 122;
         var c = (_A_ <= e.charCode && e.charCode <= _Z_) ? String.fromCharCode(e.charCode)
               : (_a_ <= e.charCode && e.charCode <= _z_) ? String.fromCharCode(e.charCode).toUpperCase()
               : null;
         if (!c) return;
-        $selected.find('text').text(function(i,t){
-          return (t.indexOf(c) >= 0) ? t.replace(c,'') : t + c;
-        });
+        // toggle letters
+        $selected.find('text').text(c);
         check($selected);
         return false;
       }
