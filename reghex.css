@@ -7,6 +7,7 @@ a:hover {
 .cell text , .buttons text { 
   text-anchor: middle; 
   dominant-baseline: central;
+  font-size: 7pt;
 }
 .edge text { 
   text-anchor: end; 
