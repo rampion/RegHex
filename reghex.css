@@ -7,13 +7,12 @@ a:hover {
 .cell text , .buttons text { 
   text-anchor: middle; 
   dominant-baseline: central;
-  font-size: 7pt;
 }
 .edge text { 
   text-anchor: end; 
 }
 .cell path {
-  fill: transparent;
+  fill: white;
   stroke: black;
 }
 .clue text { 
@@ -21,24 +20,32 @@ a:hover {
 }
 .clue path { 
   fill: gray;
-  fill-opacity: 0.2;
 }
-.selectable path:hover { 
+.selectable:hover { 
   cursor: pointer;
+}
+.selectable:hover path { 
   stroke-width: 2; 
-  fill-opacity: 0.2; 
-  fill: yellow;
+  fill: #ff8;
+}
+.selectable:hover text { 
+  fill: black;
 }
 .selected path {
   stroke-width: 2; 
-  fill-opacity: 0.2; 
-  fill: cyan;
+  fill: #8ff !important;
+}
+.selected text {
+  fill: black !important;
 }
 .A-success path,.B-success path,.C-success path {
-  fill-opacity: 0.2;
-  fill: green;
+  fill: #0b0;
+}
+.A-success text,.B-success text,.C-success text {
+  fill: white;
 }
 .A-failure path,.B-failure path,.C-failure path {
-  fill-opacity: 0.2;
-  fill: red;
+  fill: #d00;
 }
+.A-failure text,.B-failure text,.C-failure text {
+  fill: white;

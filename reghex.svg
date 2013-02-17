@@ -11,11 +11,11 @@
       <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" id="wheel"/>
       <g id="cells">
         <g id="ABC" class="cell selectable">
+          <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
           <g>
             <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/>
             <text/>
           </g>
-          <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
         </g>
       </g>
       <g id="edges">
