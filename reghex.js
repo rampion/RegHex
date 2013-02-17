@@ -1,3 +1,26 @@
+// TODO: get rid of IDs, so we can have multiple in a page
+
+$.fn.addClassSVG = function(klasses){
+  this.each(function(){
+    var curr = this.getAttribute('class');
+    klasses.split(' ').forEach(function(klass){
+      if (!curr.match(new RegExp('\\b'+klass+'\\b')))
+        curr += ' ' + klass;
+    });
+    this.setAttribute('class', curr);
+  });
+}
+
+$.fn.removeClassSVG = function(klasses){
+  this.each(function(){
+    var curr = this.getAttribute('class');
+    klasses.split(' ').forEach(function(klass){
+      curr = curr.replace(new RegExp(' '+klass+'\\b|\\b'+klass+'(?: |$)'), '');
+    });
+    this.setAttribute('class', curr);
+  });
+}
+
 // see the ids for each cell and edge
 function showIDs() {
   $('[class~=edge],[class~=cell]').each(function(){ $('text', this).text(this.id); }); 
@@ -13,8 +36,8 @@ function loadPuzzle(puzzle) {
   $('#edges').empty().append($edge);
   $('text', $cell).text('');
   $('text', $edge).text('');
-  $cell.attr('class', 'cell selectable');
-  $edge.attr('class', 'edge');
+  $cell.addClassSVG('cell selectable');
+  $edge.addClassSVG('edge');
 
   function mkID(code, j, i){ return code+'-'+j+'-'+i; };
 
@@ -27,22 +50,19 @@ function loadPuzzle(puzzle) {
       var isEdge = (j == puzzle.edgeLen || i == puzzle.edgeLen);
       var $donor = isEdge ? $edge : $cell;
 
+      var u = 10*Math.sqrt(3),
+          v = 21*Math.sqrt(2);
+
       // pack the hexagons side by side
-      var $a = $donor.clone().attr('transform', 'translate('+(10*(2*i-j)*Math.sqrt(3)) +','+(21*j*Math.sqrt(2))+')'),
-          $b = $donor.clone().attr('transform', 'translate('+(10*(-i-j)*Math.sqrt(3))  +','+(21*(i-j)*Math.sqrt(2))+')'),
-          $c = $donor.clone().attr('transform', 'translate('+(10*(-i+2*j)*Math.sqrt(3))+','+(21*(-i)*Math.sqrt(2))+')');
+      var $a = $donor.clone().attr('transform', 'translate('+(u*(2*i-j)) +','+(v*j)+')' + (isEdge ? ' rotate(240)' : '')),
+          $b = $donor.clone().attr('transform', 'translate('+(u*(-i-j))  +','+(v*(i-j))+')'),
+          $c = $donor.clone().attr('transform', 'translate('+(u*(-i+2*j))+','+(v*(-i))+')' + (isEdge ? ' rotate(120)' : ''));
 
       $donor.parent().append( $a, $b, $c );
 
       $a.attr('id', mkID('A',j,i));
       $b.attr('id', mkID('B',j,i));
       $c.attr('id', mkID('C',j,i));
-
-      if (isEdge) {
-        // some of the edge clues need to be rotated
-        $a.attr('transform', $a.attr('transform') + ' rotate(240)');
-        $c.attr('transform', $c.attr('transform') + ' rotate(120)');
-      }
     }
   }
 
@@ -92,7 +112,8 @@ function loadPuzzle(puzzle) {
   for (var id in puzzle.clues) {
     var $g = $('#'+id);
     // mark this as a clue
-    $g.attr('class', $g.attr('class').replace(' selectable','') + ' clue');
+    $g.addClassSVG('clue');
+    $g.removeClassSVG('selectable');
     $('text', $g).text(puzzle.clues[id]);
   }
 }
@@ -127,17 +148,91 @@ function loadUI() {
 
   // click to select a cell
   $('#cells').on('click', '[class~="selectable"]', function(e){
-    $('[class~="selected"]').attr('class', 'cell selectable');
-    this.setAttribute('class', 'cell selected');
+    $('[class~="selected"]').removeClassSVG('selected');
+    $(this).addClassSVG('selected');
     e.stopPropagation();
   });
 
   // click away to clear selection
   $(document).click(function(e){
-    $('[class~="selected"]').attr('class', 'cell selectable');
+    $('[class~="selected"]').removeClassSVG('selected');
   });
 
-  function check(cell){
+  var _A_ = 65,
+      _Z_ = 90,
+      _a_ = 97,
+      _z_ = 122;
+
+  function check($cell){
+    $cell.data('edges').forEach(function(edge){
+      var cells = $(edge).data('cells');
+
+      var nextClass = _a_;
+      var contains = {};
+      for (var i = _A_; i <= _Z_; i++){
+        contains[String.fromCharCode(i)] = {};
+      }
+      var klassFor = {};
+      var klassDef = {};
+
+      var s = cells.map(function(cell){
+        var v = $('text', cell).text();
+        if (v.length == 1) return v;
+        v = v.length ? v.split('').sort().join() : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if (!klassFor[v]){
+          klassFor[v] = String.fromCharCode(nextClass++);
+          klassDef[klassFor[v]] = v;
+        }
+        v.split('').forEach(function(c){
+          contains[c][klassFor[v]] = true;
+        });
+        return klassFor[v];
+      }).join('');
+
+      for (var c in contains){
+        var t = '';
+        for (var k in contains[c]){
+          t += k;
+        }
+        contains[c] = t;
+      }
+
+      var regex = new RegExp('^'+$('text', edge).text().replace(/\[.*?\]|[A-Z]/g, function(m){
+        if (m[1] == '^') {
+          var count = {};
+          m.replace(/[A-Z]/, function(c){ 
+            contains[c].split('').forEach(function(k){
+              if (!count[k]) count[k] = 0;
+              count[k]++;
+            });
+          });
+          return m.replace(']', function(){
+            var covered = '';
+            for (var k in count){
+              if (count[k] == klassDef[k].length) 
+                covered += k;
+            }
+            return covered + ']';
+          });
+        } else if (m[0] == '[') {
+          return m.replace(/[A-Z]/, function(c){ return c+contains[c]; });
+        } else {
+          return '['+m+contains[m]+']';
+        }
+      })+'$');
+
+      //console.log( edge, regex, cells, s, s.match(regex) );
+      var m = s.match(regex);
+      var error = edge.id[0]+'-error';
+      var success = edge.id[0]+'-success';
+      if (m){
+        $(cells).removeClassSVG(error);
+        if (nextClass == _a_) $(cells).addClassSVG(success);
+      } else {
+        $(cells).addClassSVG(error);
+        $(cells).removeClassSVG(success);
+      }
+    });
   };
 
   // use keys to
@@ -146,14 +241,13 @@ function loadUI() {
   //  * finish selection
   //  * rotate grid
   $(document).keypress(function(e){
-    var selected = $('[class~="selected"]')[0];
-    var selected_text = selected ? $('text', selected)[0] : null;
+    var $selected = $('[class~="selected"]');
 
     switch (e.keyCode){
     case 27: // escape
     case 13: // enter
-      if (selected) {
-        selected.setAttribute('class', 'cell selectable');
+      if ($selected.length) {
+        $selected.removeClassSVG('selected');
         return false;
       }
     case 37: // left
@@ -163,21 +257,24 @@ function loadUI() {
       rotate('clockwise'); 
       return false;
     case  8: // backspace
-      if (selected_text) {
-        selected_text.textContent = '';
-        check(this);
+      if ($selected.length) {
+        $selected.find('text').text('');
+        check($selected);
+        return false;
       }
     case 0: 
-      if (selected_text) {
+      if ($selected.length) {
         // a-z => A-Z
         // toggle letters
-        var c = (65 <= e.charCode && e.charCode <= 90)  ? String.fromCharCode(e.charCode)
-              : (97 <= e.charCode && e.charCode <= 122) ? String.fromCharCode(e.charCode).toUpperCase()
+        var c = (_A_ <= e.charCode && e.charCode <= _Z_) ? String.fromCharCode(e.charCode)
+              : (_a_ <= e.charCode && e.charCode <= _z_) ? String.fromCharCode(e.charCode).toUpperCase()
               : null;
         if (!c) return;
-        t = selected_text.textContent;
-        selected_text.textContent = (t.indexOf(c) >= 0) ? t.replace(c,'') : t + c;
-        check(this);
+        $selected.find('text').text(function(i,t){
+          return (t.indexOf(c) >= 0) ? t.replace(c,'') : t + c;
+        });
+        check($selected);
+        return false;
       }
     }
   });

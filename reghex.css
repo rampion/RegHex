@@ -34,3 +34,11 @@ a:hover {
   fill-opacity: 0.2; 
   fill: cyan;
 }
+.A-success path,.B-success path,.C-success path {
+  fill-opacity: 0.2;
+  fill: green;
+}
+.A-error path,.B-error path,.C-error path {
+  fill-opacity: 0.2;
+  fill: red;
+}
