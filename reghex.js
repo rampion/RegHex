@@ -178,7 +178,7 @@ function loadUI() {
       var s = cells.map(function(cell){
         var v = $('text', cell).text();
         if (v.length == 1) return v;
-        v = v.length ? v.split('').sort().join() : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        v = v.length ? v.split('').sort().join('') : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         if (!klassFor[v]){
           klassFor[v] = String.fromCharCode(nextClass++);
           klassDef[klassFor[v]] = v;
@@ -260,8 +260,8 @@ function loadUI() {
       if ($selected.length) {
         $selected.find('text').text('');
         check($selected);
-        return false;
       }
+      return false;
     case 0: 
       if ($selected.length) {
         // a-z => A-Z
