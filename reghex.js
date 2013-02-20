@@ -46,12 +46,12 @@ function loadPuzzle(puzzle) {
         edge: $('#edges')
       },
       neighbors = [ 
-        { to: '-a', from: '+a', dA: -2, dB: +1, dC: +1 },
-        { to: '+a', from: '-a', dA: +2, dB: -1, dC: -1 },
-        { to: '-b', from: '+b', dA: +1, dB: -2, dC: +1 },
-        { to: '+b', from: '-b', dA: -1, dB: +2, dC: -1 },
-        { to: '-c', from: '+c', dA: +1, dB: +1, dC: -2 },
-        { to: '+c', from: '-c', dA: -1, dB: -1, dC: +2 },
+        { to: '-A', from: '+A', dA: -2, dB: +1, dC: +1 },
+        { to: '+A', from: '-A', dA: +2, dB: -1, dC: -1 },
+        { to: '-B', from: '+B', dA: +1, dB: -2, dC: +1 },
+        { to: '+B', from: '-B', dA: -1, dB: +2, dC: -1 },
+        { to: '-C', from: '+C', dA: +1, dB: +1, dC: -2 },
+        { to: '+C', from: '-C', dA: -1, dB: -1, dC: +2 },
       ],
       hexes = {};
 
@@ -153,15 +153,23 @@ function loadUI() {
 
   // see whether this cell is part of any full words,
   // and if so, whether they match the edge pattern
-  function check($cell){/*
-    $cell.data('edges').forEach(function(edge){
-      var cells = $(edge).data('cells');
+  function check($cell){
+    ['A','B','C'].forEach(function(dim){
+      var failure = dim+'-failure',
+          success = dim+'-success',
+          cells = [];
 
-      var failure = edge.id[0]+'-failure';
-      var success = edge.id[0]+'-success';
+      var c, d;
+      
+      // find the edge regex
+      for (c = $cell; d = c.data('-'+dim); c = d) ;
+      var regex = new RegExp('^'+ c.find('text').text() + '$');
 
-      var regex = new RegExp('^'+$('text', edge).text()+'$');
-      var str = cells.map(function(cell){ return $('text', cell).text(); }).join(''); 
+      // find the row text
+      while ((c = c.data('+'+dim)) && c.is('[class~=cell]'))
+        cells.push(c[0]);
+
+      var str = cells.map(function(cell){ return $('text', cell).text(); }).join('');
 
       if (str.length < cells.length) {
         // incomplete
@@ -177,13 +185,14 @@ function loadUI() {
         $(cells).removeClassSVG(success);
       }
     });
-  */};
+  }
 
   // use keys to
   //  * enter text
   //  * delete text
   //  * finish selection
   //  * rotate grid
+  //  * move between hexes
   $(document).keypress(function(e){
     var $selected = $('[class~="selected"]');
 
@@ -200,6 +209,19 @@ function loadUI() {
     case 39: // right
       rotate('clockwise'); 
       return false;
+    case 9: // tab
+      if ($selected.length) {
+        var r = rotation % 360;
+        var $next = $selected.data(
+          (e.shiftKey ? '-' : '+') + 
+          (r == 120 ? 'A' : r == 0 ? 'B' : 'C')
+        );
+        if ($next && $next.is('[class~=selectable]')){
+          $next.addClassSVG('selected');
+          $selected.removeClassSVG('selected');
+        }
+        return false;
+      }
     case  8: // backspace
       if ($selected.length) {
         $selected.find('text').text('');
