@@ -30,6 +30,18 @@ function showCoords($svg){
 
 function loadPuzzleInto($svg) { 
   function loadPuzzle(puzzle) {
+    // set the dimensions
+    $svg.attr({
+      height: puzzle.height,
+      width: puzzle.width,
+    });
+    $('[class~=root]', $svg).attr(
+      'transform', 'translate('+(puzzle.width/2)+','+(puzzle.height/2)+')'
+    );
+    $('[class~=buttons]', $svg).attr(
+      'x', puzzle.width/2
+    );
+
     // clear anything prior
     $('[class~=cells]', $svg).empty();
     $('[class~=edges]', $svg).empty();
@@ -124,7 +136,6 @@ function loadUI($svg) {
   var rotation = 0;
   function rotate(direction){
     if (rotationEnabled){
-      console.log(direction);
       var delta = (direction == 'clockwise') ? +120 : -120;
       $('animateTransform', $svg).each(function(){
         // the wheel and the cars rotate in opposite directions to keep the text facing up.
@@ -198,7 +209,7 @@ function loadUI($svg) {
   //  * finish selection
   //  * rotate grid
   //  * move between hexes
-  $svg.parent().keypress(function(e){
+  $(document).keypress(function(e){
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     var $selected = $('[class~="selected"]', $svg);
 
@@ -252,4 +263,5 @@ function loadUI($svg) {
       }
     }
   });
+  $svg.focus(function(){ console.log(this); });
 }

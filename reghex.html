@@ -6,31 +6,64 @@
     <link href="reghex.css" type="text/css" rel="stylesheet" xmlns="http://www.w3.org/1999/xhtml"/>
   </head>
   <body>
-    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="800">
-      <text class="buttons" x="450" y="10">
-        <a title="rotate widdershins" xlink:href="#widdershins" class="widdershins">&#8656;</a>
-        <a title="rotate clockwise" xlink:href="#clockwise" class="clockwise">&#8658;</a>
-      </text>
-      <defs>
-        <g class="cell selectable">
-          <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
-          <g><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/><text/></g>
+    <h4>grid</h4>
+    <div>
+      <svg id="grid" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <text class="buttons" y="10">
+          <a title="rotate widdershins" xlink:href="#widdershins" class="widdershins">&#8656;</a>
+          <a title="rotate clockwise" xlink:href="#clockwise" class="clockwise">&#8658;</a>
+        </text>
+        <defs>
+          <g class="cell selectable">
+            <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
+            <g><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/><text/></g>
+          </g>
+          <g class="edge"><text x="10"/></g>
+        </defs>
+        <g class="root">
+          <g>
+            <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" class="wheel"/>
+            <g class="cells"></g>
+            <g class="edges"></g>
+          </g>
         </g>
-        <g class="edge"><text x="10"/></g>
-      </defs>
-      <g transform="translate(450, 400)">
-        <g>
-          <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" class="wheel"/>
-          <g class="cells"></g>
-          <g class="edges"></g>
+      </svg>
+    </div>
+    <h4>puzzle</h4>
+    <div>
+      <svg id="puzzle" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="800">
+        <text class="buttons" x="450" y="10">
+          <a title="rotate widdershins" xlink:href="#widdershins" class="widdershins">&#8656;</a>
+          <a title="rotate clockwise" xlink:href="#clockwise" class="clockwise">&#8658;</a>
+        </text>
+        <defs>
+          <g class="cell selectable">
+            <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
+            <g><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/><text/></g>
+          </g>
+          <g class="edge"><text x="10"/></g>
+        </defs>
+        <g transform="translate(450, 400)">
+          <g>
+            <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" class="wheel"/>
+            <g class="cells"></g>
+            <g class="edges"></g>
+          </g>
         </g>
-      </g>
-    </svg>
+      </svg>
+    </div>
     <script>
       $(function(){
-        var $svg = $('svg');
-        loadUI($svg);
-        $.get('puzzle.json', loadPuzzleInto($svg), 'json');
+        var $puzzle = $('#puzzle'), $grid = $('#grid');
+        // load a puzzle
+        loadUI($puzzle);
+        $.get('puzzle.json', loadPuzzleInto($puzzle), 'json');
+        // show a grid
+        loadUI($grid);
+        $.get('grid.json', function(json){
+          loadPuzzleInto($grid)(json);
+          showCoords($grid);
+        }, 'json');
       });
     </script>
   </body>
