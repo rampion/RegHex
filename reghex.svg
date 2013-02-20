@@ -6,23 +6,18 @@
     <a title="rotate widdershins" xlink:href="#widdershins" id="widdershins">&#8656;</a>
     <a title="rotate clockwise" xlink:href="#clockwise" id="clockwise">&#8658;</a>
   </text>
+  <defs>
+    <g id="cell-template" class="cell selectable">
+      <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
+      <g><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/><text/></g>
+    </g>
+    <g id="edge-template" class="edge"><text x="10"/></g>
+  </defs>
   <g transform="translate(450, 400)">
     <g>
       <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" id="wheel"/>
-      <g id="cells">
-        <g id="ABC" class="cell selectable">
-          <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
-          <g>
-            <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/>
-            <text/>
-          </g>
-        </g>
-      </g>
-      <g id="edges">
-        <g class="edge">
-          <text x="10"/>
-        </g>
-      </g>
+      <g id="cells"></g>
+      <g id="edges"></g>
     </g>
     <script xlink:href="http://code.jquery.com/jquery.js"></script>
     <script xlink:href="reghex.js"></script>

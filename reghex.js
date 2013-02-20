@@ -1,7 +1,7 @@
 // TODO: get rid of IDs, so we can have multiple in a page
 
 $.fn.addClassSVG = function(klasses){
-  this.each(function(){
+  return this.each(function(){
     var curr = this.getAttribute('class');
     klasses.split(' ').forEach(function(klass){
       if (!curr.match(new RegExp('\\b'+klass+'\\b')))
@@ -12,7 +12,7 @@ $.fn.addClassSVG = function(klasses){
 }
 
 $.fn.removeClassSVG = function(klasses){
-  this.each(function(){
+  return this.each(function(){
     var curr = this.getAttribute('class');
     klasses.split(' ').forEach(function(klass){
       curr = curr.replace(new RegExp(' '+klass+'\\b|\\b'+klass+'(?: |$)'), '');
@@ -22,100 +22,93 @@ $.fn.removeClassSVG = function(klasses){
 }
 
 // see the ids for each cell and edge
-function showIDs() {
-  $('[class~=edge],[class~=cell]').each(function(){ $('text', this).text(this.id); }); 
+function showCoords(){
+  $('[class~=edge] text,[class~=cell] text').text(function(){ 
+    return $(this).data('coords');
+  }).css('font-size', '7pt');
 }
 
 function loadPuzzle(puzzle) {
-  // grab these to use as templates
-  var $cell = $('#cells > g:first-child');
-  var $edge = $('#edges > g:first-child');
-
   // clear anything prior
-  $('#cells').empty().append($cell);
-  $('#edges').empty().append($edge);
-  $('text', $cell).text('');
-  $('text', $edge).text('');
-  $cell.addClassSVG('cell selectable');
-  $edge.addClassSVG('edge');
+  $('#cells').empty();
+  $('#edges').empty();
 
-  function mkID(code, j, i){ return code+'-'+j+'-'+i; };
+  if (puzzle.edgeLen <= 0) return;
+  
+  var dX = 10*Math.sqrt(3),
+      dY = 10,
+      $template = {
+        cell: $('#cell-template'),
+        edge: $('#edge-template')
+      },
+      $parent = {
+        cell: $('#cells'),
+        edge: $('#edges')
+      },
+      neighbors = [ 
+        { to: '-a', from: '+a', dA: -2, dB: +1, dC: +1 },
+        { to: '+a', from: '-a', dA: +2, dB: -1, dC: -1 },
+        { to: '-b', from: '+b', dA: +1, dB: -2, dC: +1 },
+        { to: '+b', from: '-b', dA: -1, dB: +2, dC: -1 },
+        { to: '-c', from: '+c', dA: +1, dB: +1, dC: -2 },
+        { to: '+c', from: '-c', dA: -1, dB: -1, dC: +2 },
+      ],
+      hexes = {};
 
-  // clone the templates to create a puzzle of the appropriate size
-  for (var j = 0; j <= puzzle.edgeLen; j++){
-    for (var i = 1; i <= puzzle.edgeLen; i++){
+  function create(type, a, b, c, rotate){
+    var h = $template[type].clone(),
+        x = [a,b,c].join(','),
+        t = h.find('text');
 
-      // the edges have spots for clues
-      if (i == puzzle.edgeLen && j == 0) continue; // except this one
-      var isEdge = (j == puzzle.edgeLen || i == puzzle.edgeLen);
-      var $donor = isEdge ? $edge : $cell;
-
-      var u = 10*Math.sqrt(3),
-          v = 21*Math.sqrt(2);
-
-      // pack the hexagons side by side
-      var $a = $donor.clone().attr('transform', 'translate('+(u*(2*i-j)) +','+(v*j)+')' + (isEdge ? ' rotate(240)' : '')),
-          $b = $donor.clone().attr('transform', 'translate('+(u*(-i-j))  +','+(v*(i-j))+')'),
-          $c = $donor.clone().attr('transform', 'translate('+(u*(-i+2*j))+','+(v*(-i))+')' + (isEdge ? ' rotate(120)' : ''));
-
-      $donor.parent().append( $a, $b, $c );
-
-      $a.attr('id', mkID('A',j,i));
-      $b.attr('id', mkID('B',j,i));
-      $c.attr('id', mkID('C',j,i));
-    }
-  }
-
-  // create rows of cells for each edge
-  $('[class~=cell]').each(function(){
-    $(this).data('edges', []);
-  });
-  $('[class~=edge][id]').each(function(){
-    var edge = this;
-    var m = edge.id.match(/^([ABC])-(\d+)-(\d+)$/);
-    var code = m[1];
-    var jMax = parseInt(m[2]);
-    var iMax = parseInt(m[3]);
-
-    var nextThird = {'A':'B','B':'C','C':'A'};
-    var prevThird = {'A':'C','B':'A','C':'B'};
-    var z = puzzle.edgeLen;
-
-    var cells = [];
-    function push(code,j,i){ 
-      cells.push( 
-        i == 0 && j == 0 
-          ? $cell 
-          : document.getElementById(mkID(code,j,i))
-      );
-    }
-
-    var i, j;
-    // some number from the same prefix (decrease by (1,1))
-    for (i = iMax - 1, j = jMax - 1; i > 0 && j >= 0; i--, j--) {
-      push( code, j, i );
-    }
-
-    if (jMax > iMax) for (var k = 0; k < z; k++) {
-      push( nextThird[code], k, jMax - iMax );
-    } else for (var k = 1; k < z; k++) {
-      push( prevThird[code], iMax - jMax, k );
-    }
-
-    $(edge).data('cells', cells);
-    cells.forEach(function(cell){ 
-      $(cell).data('edges').push(edge); 
+    // place the hex in the correct position
+    h.attr({
+      transform: 'translate('+(dX*b)+','+(dY*(c-a))+')' + (type == 'edge' ? ' rotate('+rotate+')' : ''),
     });
-  });
+    $parent[type].append(h);
 
-  // load puzzle clues into the cells and edges
-  for (var id in puzzle.clues) {
-    var $g = $('#'+id);
-    // mark this as a clue
-    $g.addClassSVG('clue');
-    $g.removeClassSVG('selectable');
-    $('text', $g).text(puzzle.clues[id]);
+    h.find('text').data('coords', x); // for showCoords
+
+    // note down its adjacencies
+    hexes[x] = h;
+    neighbors.forEach(function(o){
+      var n = hexes[ [a+o.dA,b+o.dB,c+o.dC].join(',') ];
+      if (n) {
+        h.data( o.to,   n );
+        n.data( o.from, h );
+      }
+    });
+
+    // fill in the blanks
+    if (puzzle.clues[x]){
+      h.addClassSVG('clue').
+        removeClassSVG('selectable').
+        find('text').text(puzzle.clues[x]);
+    }
   }
+
+  // create all 1 + z*(z-1)*(z-1)/2 cells
+  //        and 3 + 6*(z-1) edges
+  var z = puzzle.edgeLen;
+  create('cell', 0, 0, 0);
+  create('edge', -2*z, z, z, 240 );
+  create('edge', z, -2*z, z, 0   );
+  create('edge', z, z, -2*z, 120 );
+  for (var k = 1; k < z; k++){
+    for (var t = 0; t < k; t++){
+      create('cell', +2*k-t, -k+2*t, -k-t);
+      create('cell', -2*k+t, +k-2*t, +k+t);
+      create('cell', -k-t, +2*k-t, -k+2*t);
+      create('cell', +k+t, -2*k+t, +k-2*t);
+      create('cell', -k+2*t, -k-t, +2*k-t);
+      create('cell', +k-2*t, +k+t, -2*k+t);
+    }
+    create('edge', -2*z+k, z-2*k, z+k, 240 );
+    create('edge', -2*z+k, z+k, z-2*k, 240 );
+    create('edge', z+k, -2*z+k, z-2*k, 0 );
+    create('edge', z-2*k, -2*z+k, z+k, 0 );
+    create('edge', z-2*k, z+k, -2*z+k, 120 );
+    create('edge', z+k, z-2*k, -2*z+k, 120 );
+  } 
 }
 
 function loadUI() {
@@ -160,7 +153,7 @@ function loadUI() {
 
   // see whether this cell is part of any full words,
   // and if so, whether they match the edge pattern
-  function check($cell){
+  function check($cell){/*
     $cell.data('edges').forEach(function(edge){
       var cells = $(edge).data('cells');
 
@@ -184,7 +177,7 @@ function loadUI() {
         $(cells).removeClassSVG(success);
       }
     });
-  };
+  */};
 
   // use keys to
   //  * enter text
