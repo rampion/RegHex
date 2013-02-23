@@ -1,11 +1,12 @@
 svg {
   display: none;
+  background: #ddd;
 }
 
-a {
+svg a {
   font-size: 20pt;
 }
-a:hover { 
+svg a:hover { 
   fill: red;
 }
 .cell text , text.buttons { 

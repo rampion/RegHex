@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="reghex.js"></script>
+    <link href="reghex.css" type="text/css" rel="stylesheet" xmlns="http://www.w3.org/1999/xhtml"/>
+    <style>
+      .section {
+        margin: auto;
+        width: 1050px;
+        margin-top: 20px;
+      }
+      .section > * {
+        display: inline-block;
+        vertical-align: top;
+      }
+
+    </style>
+    <title>RegHex</title>
+  </head>
+  <body>
+    <a href="https://github.com/rampion/RegHex"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_red_aa0000.png" alt="Fork me on GitHub"></a>
+    <h4 style="text-align:center">RegHex</h4>
+    <div class="section">
+      <div style="width:200px">
+        <p>I highly enjoyed <a href="http://www.coinheist.com/rubik/a_regular_crossword/grid.pdf">the hexagonal regular expression puzzle</a> from
+        this year's MIT puzzle hunt.  I found it awkward to solve on a computer though, it needed a better interface.
+        </p>
+        <p>So I made one.</p>
+        <p>Use the &lArr; and &rArr; buttons to rotate the puzzle widdershins or clockwise, respectively (or just hover over the puzzle and use your normal left and right keys).</p>
+
+        <p>Click a hexagon and type a letter A-Z (capitalization not important) to fill it with a guess. Hit backspace to clear a guess, and tab to move to the next
+           hexagon in the row.
+        </p>
+
+        <p>When an entire row is filled, it will be colored green if the row matches the clue, and red if it doesn't.  I'd like to provide some earlier feedback,
+           but to do so correctly would require a good algorithm to determine if the intersection of a regular expression and a string of guesses and
+           blanks have a non-empty intersection.  I'm on the lookout for one, so <a class='mailme'>let me know</a> if you find one.
+        </p>
+      </div>
+      <svg id="puzzle" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <text class="buttons" y="10">
+          <a title="rotate widdershins" xlink:href="#widdershins" class="widdershins">&#8656;</a>
+          <a title="rotate clockwise" xlink:href="#clockwise" class="clockwise">&#8658;</a>
+        </text>
+        <defs>
+          <g class="cell selectable">
+            <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
+            <g><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/><text/></g>
+          </g>
+          <g class="edge"><text x="10"/></g>
+        </defs>
+        <g class="root">
+          <g>
+            <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" class="wheel"/>
+            <g class="cells"></g>
+            <g class="edges"></g>
+          </g>
+        </g>
+      </svg>
+    </div>
+      <script>
+        var $puzzle = $('#puzzle');
+        // load a puzzle
+        loadUI($puzzle);
+        $.get('puzzle.json', loadPuzzleInto($puzzle), 'json');
+      </script>
+    <div class="section">
+      <svg id="grid" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <text class="buttons" y="10">
+          <a title="rotate widdershins" xlink:href="#widdershins" class="widdershins">&#8656;</a>
+          <a title="rotate clockwise" xlink:href="#clockwise" class="clockwise">&#8658;</a>
+        </text>
+        <defs>
+          <g class="cell selectable">
+            <path d="m 17.3205080756888 10 l 0 -20 l -17.3205080756888 -10 l -17.3205080756888 10 l 0 20 l 17.3205080756888 10 z"/>
+            <g><animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze"/><text/></g>
+          </g>
+          <g class="edge"><text x="10"/></g>
+        </defs>
+        <g class="root">
+          <g>
+            <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" class="wheel"/>
+            <g class="cells"></g>
+            <g class="edges"></g>
+          </g>
+        </g>
+      </svg>
+      <div style="width:700px">
+        <p>Of course, there's no reason this has to be the <b>only</b> puzzle of this type.</p>
+        <p>The original puzzle is <a href="puzzle.json">specified in json</a>, and loaded dynamically by the page.</p>
+        <p>Now that I've got the software down (well, mostly, it's not like I'm not going to continue tweaking), I'm going to work on creating some more, but I'll gladly <a class="mailme">take contributions</a>.</p>
+        <p>Each cell in the hex grid has a unique address, based on three (non-orthogonal) axes:<ul>
+          <li><b>A</b> - a ray pointing towards the upper left (30 degrees off the vertical) from the center.</li>
+          <li><b>B</b> - a ray pointing towards the right (0 degrees off the horizontal) from the center.</li>
+          <li><b>C</b> - a ray pointing towards the lower left (30 degrees off the vertical) from the center.</li>
+        </ul></p>
+        <p>As you can see from the grid on the left, each hex is two units wide in each of the three directions.  Since the axes aren't orthogonal, moving along one axis changes your offset along the others.  
+           Moving one hex in any direction will increment one coordinate by two, and decrement the other two by one (or decrement one by two, and increment two by one).</p>
+      </div>
+    </div>
+      <script>
+        // show a grid
+        var $grid = $('#grid');
+        loadUI($grid);
+        $.get('grid.json', function(json){
+          loadPuzzleInto($grid)(json);
+          showCoords($grid);
+        }, 'json');
+      </script>
+    <div class="section">
+      <p>Enjoy! - Noah (<a href="https://github.com/rampion/">rampion</a>)</a>
+    </div>
+    <script>
+      $(function(){
+        $('.mailme').attr('href', "íáéìôïºîïáè®åáóôåòìùÀçíáéì®ãïí".replace(/./g,function(m){ return String.fromCharCode( (m.charCodeAt(0) + 128) % 256 ); }));
+      });
+    </script>
+  </body>
+</html>
