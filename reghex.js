@@ -1,16 +1,20 @@
-// TODO: get rid of IDs, so we can have multiple in a page
-
+// jQuery.fn.addClass doesn't work with svg elements
 $.fn.addClassSVG = function(klasses){
   return this.each(function(){
     var curr = this.getAttribute('class');
-    klasses.split(' ').forEach(function(klass){
-      if (!curr.match(new RegExp('\\b'+klass+'\\b')))
-        curr += ' ' + klass;
-    });
+    if (curr){
+      klasses.split(' ').forEach(function(klass){
+        if (!curr.match(new RegExp('\\b'+klass+'\\b')))
+          curr += ' ' + klass;
+      });
+    } else {
+      curr = klasses;
+    }
     this.setAttribute('class', curr);
   });
 }
 
+// jQuery.fn.removeClass doesn't work with svg elements
 $.fn.removeClassSVG = function(klasses){
   return this.each(function(){
     var curr = this.getAttribute('class');
@@ -34,7 +38,7 @@ function loadPuzzleInto($svg) {
     $svg.attr({
       height: puzzle.height,
       width: puzzle.width,
-    });
+    }).show();
     $('[class~=root]', $svg).attr(
       'transform', 'translate('+(puzzle.width/2)+','+(puzzle.height/2)+')'
     );
@@ -203,6 +207,13 @@ function loadUI($svg) {
     });
   }
 
+  // track whether we're focused on this svg
+  $svg.hover(function(){
+    $svg.addClassSVG('focused');
+  }, function(){ 
+    $svg.removeClassSVG('focused');
+  });
+
   // use keys to
   //  * enter text
   //  * delete text
@@ -211,6 +222,7 @@ function loadUI($svg) {
   //  * move between hexes
   $(document).keypress(function(e){
     if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (! $svg.is('[class~=focused]') ) return;
     var $selected = $('[class~="selected"]', $svg);
 
     switch (e.keyCode){

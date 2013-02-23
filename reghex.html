@@ -31,8 +31,8 @@
     </div>
     <h4>puzzle</h4>
     <div>
-      <svg id="puzzle" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="800" height="800">
-        <text class="buttons" x="450" y="10">
+      <svg id="puzzle" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <text class="buttons" y="10">
           <a title="rotate widdershins" xlink:href="#widdershins" class="widdershins">&#8656;</a>
           <a title="rotate clockwise" xlink:href="#clockwise" class="clockwise">&#8658;</a>
         </text>
@@ -43,7 +43,7 @@
           </g>
           <g class="edge"><text x="10"/></g>
         </defs>
-        <g transform="translate(450, 400)">
+        <g class="root">
           <g>
             <animateTransform attributeName="transform" attributeType="XML" type="rotate" dur="1s" fill="freeze" class="wheel"/>
             <g class="cells"></g>

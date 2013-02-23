@@ -1,6 +1,6 @@
 {
   "edgeLen": 7, 
-  "height":  600,
+  "height":  800,
   "width":  800,
   "clues": {
     "-8,-5,13"  : ".*G.*V.*H.*",

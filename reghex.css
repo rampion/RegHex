@@ -1,10 +1,14 @@
+svg {
+  display: none;
+}
+
 a {
   font-size: 20pt;
 }
 a:hover { 
   fill: red;
 }
-.cell text , .buttons text { 
+.cell text , text.buttons { 
   text-anchor: middle; 
   dominant-baseline: central;
 }
@@ -31,21 +35,22 @@ a:hover {
 .selectable:hover text { 
   fill: black;
 }
-.selected path {
+.focused .selected path {
   stroke-width: 2; 
   fill: #8ff !important;
 }
-.selected text {
+.focused .selected text {
   fill: black !important;
 }
 .A-success path,.B-success path,.C-success path {
-  fill: #0b0;
+  fill: #8f8;
 }
-.A-success text,.B-success text,.C-success text {
-  fill: white;
+.A-success.B-success path,.B-success.C-success path,.C-success.A-success path {
+  fill: #4d4;
+}
+.A-success.B-success.C-success path {
+  fill: #2b2;
 }
 .A-failure path,.B-failure path,.C-failure path {
-  fill: #d00;
+  fill: #e66 !important;
 }
-.A-failure text,.B-failure text,.C-failure text {
-  fill: white;
