@@ -220,7 +220,7 @@ function loadUI($svg) {
   //  * finish selection
   //  * rotate grid
   //  * move between hexes
-  $(document).keypress(function(e){
+  $(document).keydown(function(e){
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     if (! $svg.is('[class~=focused]') ) return;
     var $selected = $('[class~="selected"]', $svg);
@@ -257,23 +257,14 @@ function loadUI($svg) {
         check($selected);
       }
       return false;
-    case 0: 
-      if ($selected.length) {
-        // a-z => A-Z
-        var _A_ = 65,
-            _Z_ = 90,
-            _a_ = 97,
-            _z_ = 122;
-        var c = (_A_ <= e.charCode && e.charCode <= _Z_) ? String.fromCharCode(e.charCode)
-              : (_a_ <= e.charCode && e.charCode <= _z_) ? String.fromCharCode(e.charCode).toUpperCase()
-              : null;
-        if (!c) return;
-        // toggle letters
-        $selected.find('text').text(c);
+    default:
+      // toggle letters
+      var _A_ = 65, _Z_ = 90;
+      if ($selected.length && _A_ <= e.keyCode && e.keyCode <= _Z_) {
+        $selected.find('text').text(String.fromCharCode(e.keyCode));
         check($selected);
         return false;
       }
     }
   });
-  $svg.focus(function(){ console.log(this); });
 }
