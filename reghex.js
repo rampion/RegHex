@@ -133,19 +133,24 @@ function loadPuzzleInto($svg) {
 function loadUI($svg) {
   // disable the buttons during rotation
   var rotationEnabled = true;
-  $('animateTransform', $svg).on('beginEvent', function(){ rotationEnabled = false; });
-  $('animateTransform', $svg).on('endEvent', function(){ rotationEnabled = true; });
+
+  // Safari5 can't select animateTransform elements directly
+  $svg.on('beginEvent', '[class~=rotation]', function(){ rotationEnabled = false; });
+  $svg.on('endEvent',   '[class~=rotation]', function(){ rotationEnabled = true; });
 
   // rotate clockwise or widdershins with a click of the buttons
   var rotation = 0;
   function rotate(direction){
     if (rotationEnabled){
       var delta = (direction == 'clockwise') ? +120 : -120;
-      $('animateTransform', $svg).each(function(){
+      $('[class~=rotation]', $svg).each(function(){
         // the wheel and the cars rotate in opposite directions to keep the text facing up.
         var sign = $(this).is('[class~=wheel]') ? +1 : -1;
         this.setAttribute('from', sign * rotation);
         this.setAttribute('to', sign * (rotation + delta));
+
+        // Safari 5 : still flickers due to 
+        //  https://bugs.webkit.org/show_bug.cgi?id=18450
         this.beginElement();
       });
       rotation += delta;
