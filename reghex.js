@@ -32,6 +32,50 @@ function showCoords($svg){
   }).css('font-size', '7pt');
 }
 
+// given an regexp expression (as a string), return a regexp expression (as a
+// string) that admits blank squares (represented by the underscore character, _ )
+function AddRegExpBlanks(re) {
+  var result = ''
+  var state = 0  // 0 = scanning, 1 = just saw '[', 2 = looking for ']', case 3 = just saw '\'
+  var i
+  for (i=0; i < re.length; i++) {
+    var c = re[i];
+    switch (state) {
+      case 3: // just saw \ escape. copy character verbatim
+        result += c;
+        state = 0;
+        break;
+      case 1: // just saw [. if not a negation, insert underscore
+        if (c !== '^') {
+          result += '_';
+        }
+        result += c;
+        state = 2;
+        break;
+      case 2: // inside bracket. copy until we see a ]
+        result += c;
+        if (c === ']') {
+          state = 0;
+        }
+        break;
+      case 0: // normal situation
+        if ('^$.*+()|?{},[\\'.includes(c)) {
+          // special characters
+          result += c;
+          if (c === '\\') {
+            state = 3;
+          } else if (c === '[') {
+            state = 1;
+          }
+        } else {
+          result += '(?:' + c + '|_)'
+        }
+        break;
+    }
+  }
+  return result;
+}
+
 function loadPuzzleInto($svg) { 
   function loadPuzzle(puzzle) {
     // set the dimensions
@@ -184,28 +228,31 @@ function loadUI($svg) {
           cells = [];
 
       var c, d;
-      
+
       // find the edge regex
       for (c = $cell; d = c.data('-'+dim); c = d) ;
-      var regex = new RegExp('^'+ c.find('text').text() + '$');
+      var re_text = '^' + c.find('text').text() + '$';
+      var regex = new RegExp(AddRegExpBlanks(re_text));
 
       // find the row text
       while ((c = c.data('+'+dim)) && c.is('[class~=cell]'))
         cells.push(c);
 
-      var str = cells.map(function(cell){ return $('text', cell).text(); }).join('');
+      var str = cells.map(function(cell){ var a = $('text', cell).text(); return a == '' ? '_' : a; }).join('');
       var $cells = $(cells).map(function(){ return this.toArray(); });
 
-      if (str.length < $cells.length) {
-        // incomplete
-        $cells.removeClassSVG(success);
-        $cells.removeClassSVG(failure);
-      } else if (str.match(regex)) {
-        // success
-        $cells.addClassSVG(success);
-        $cells.removeClassSVG(failure);
+      if (str.match(regex)) {
+        if (str.includes('_')) {
+          // partial match
+          $cells.removeClassSVG(success);
+          $cells.removeClassSVG(failure);
+        } else {
+          // success
+          $cells.addClassSVG(success);
+          $cells.removeClassSVG(failure);
+        }
       } else {
-        // failure
+        // mismatch
         $cells.addClassSVG(failure);
         $cells.removeClassSVG(success);
       }
